@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N & K Fahrzeugüberführung – Schnell. Zuverlässig. Persönlich.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy-deep:   #050d1a;
+  --navy:        #081428;
+  --navy-mid:    #0d1f3c;
+  --navy-light:  #122850;
+  --navy-card:   #0f1e38;
+  --blue-glow:   #1a3a6e;
+  --accent:      #2e7fff;
+  --accent-bright: #5b9eff;
+  --accent-pale: rgba(46,127,255,0.12);
+  --gold:        #f0b429;
+  --white:       #eef2f9;
+  --text-muted:  #7a91b8;
+  --border:      rgba(46,127,255,0.18);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--navy-deep);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius:3px; }
+
+/* ══ NOISE OVERLAY ══ */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:999;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ══ NAV ══ */
+nav {
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 60px;
+  height:76px;
+  background:rgba(5,13,26,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+
+.nav-logo {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-decoration:none;
+}
+
+/* SVG Logo Mark */
+.logo-hex {
+  width:46px; height:46px; flex-shrink:0;
+}
+
+.nav-brand {
+  display:flex;
+  flex-direction:column;
+  line-height:1.1;
+}
+
+.nav-brand-main {
+  font-family:'Orbitron', sans-serif;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--white);
+}
+
+.nav-brand-main .amp { color:var(--accent); }
+
+.nav-brand-sub {
+  font-size:9px;
+  letter-spacing:3px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  font-family:'Outfit', sans-serif;
+  font-weight:500;
+}
+
+.nav-links {
+  display:flex;
+  align-items:center;
+  gap:36px;
+  list-style:none;
+}
+
+.nav-links a {
+  text-decoration:none;
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:1px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  transition:color .2s;
+  position:relative;
+}
+
+.nav-links a::after {
+  content:'';
+  position:absolute;
+  bottom:-4px; left:0;
+  width:0; height:2px;
+  background:var(--accent);
+  transition:width .3s;
+}
+
+.nav-links a:hover { color:var(--white); }
+.nav-links a:hover::after { width:100%; }
+
+.nav-cta {
+  background:var(--accent);
+  color:var(--white) !important;
+  padding:10px 24px;
+  border-radius:4px;
+  font-weight:600 !important;
+  letter-spacing:1px;
+  transition:background .2s, transform .2s !important;
+}
+
+.nav-cta:hover { background:#1a6ee8 !important; transform:translateY(-1px); }
+.nav-cta::after { display:none !important; }
+
+/* ══ HERO ══ */
+.hero {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:120px 60px 80px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Animated grid */
+.hero::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(46,127,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46,127,255,0.07) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 100%);
+  animation:gridFloat 20s ease-in-out infinite;
+}
+
+@keyframes gridFloat {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-20px); }
+}
+
+/* Glow orb */
+.hero::after {
+  content:'';
+  position:absolute;
+  top:10%; right:10%;
+  width:600px; height:600px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(46,127,255,0.15) 0%, transparent 70%);
+  pointer-events:none;
+  animation:pulse 6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { transform:scale(1); opacity:.8; }
+  50% { transform:scale(1.1); opacity:1; }
+}
+
+.hero-eyebrow {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:24px;
+  position:relative;
+  z-index:2;
+  opacity:0;
+  animation:fadeUp .8s .1s forwards;
+}
+
+.hero-eyebrow::before {
+  content:'';
+  width:32px; height:2px;
+  background:var(--accent);
+}
+
+.hero-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:clamp(52px, 8.5vw, 120px);
+  font-weight:700;
+  line-height:.92;
+  letter-spacing:-1px;
+  position:relative;
+  z-index:2;
+  opacity:0;
+  animation:fadeUp .9s .25s forwards;
+}
+
+.hero-title .line2 {
+  color:var(--accent);
+  display:block;
+  text-shadow:0 0 80px rgba(46,127,255,0.4);
+}
+
+.hero-title .line3 {
+  -webkit-text-stroke:1px rgba(255,255,255,0.25);
+  color:transparent;
+  display:block;
+}
+
+.hero-sub {
+  font-size:18px;
+  font-weight:300;
+  color:var(--text-muted);
+  max-width:520px;
+  line-height:1.7;
+  margin-top:36px;
+  position:relative;
+  z-index:2;
+  opacity:0;
+  animation:fadeUp .8s .4s forwards;
+}
+
+.hero-sub strong { color:var(--white); font-weight:500; }
+
+.hero-actions {
+  display:flex;
+  gap:16px;
+  margin-top:48px;
+  position:relative;
+  z-index:2;
+  opacity:0;
+  animation:fadeUp .8s .55s forwards;
+  flex-wrap:wrap;
+}
+
+.btn-primary {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:var(--accent);
+  color:var(--white);
+  padding:16px 36px;
+  border-radius:4px;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:1px;
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:all .25s;
+  box-shadow:0 0 40px rgba(46,127,255,0.35);
+}
+
+.btn-primary:hover {
+  background:#1a6ee8;
+  transform:translateY(-2px);
+  box-shadow:0 8px 50px rgba(46,127,255,0.5);
+}
+
+.btn-secondary {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:transparent;
+  color:var(--white);
+  padding:16px 36px;
+  border-radius:4px;
+  border:1px solid var(--border);
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:1px;
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:all .25s;
+}
+
+.btn-secondary:hover {
+  border-color:var(--accent);
+  color:var(--accent);
+  background:var(--accent-pale);
+}
+
+/* Scroll indicator */
+.scroll-hint {
+  position:absolute;
+  bottom:40px; left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  opacity:0;
+  animation:fadeUp .8s 1.2s forwards;
+}
+
+.scroll-hint span {
+  font-size:9px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+
+.scroll-arrow {
+  width:24px; height:40px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  position:relative;
+}
+
+.scroll-arrow::after {
+  content:'';
+  width:4px; height:8px;
+  background:var(--accent);
+  border-radius:2px;
+  position:absolute;
+  top:6px; left:50%;
+  transform:translateX(-50%);
+  animation:scrollBob 2s ease-in-out infinite;
+}
+
+@keyframes scrollBob {
+  0%,100% { top:6px; opacity:1; }
+  80% { top:22px; opacity:0; }
+}
+
+/* Stats strip */
+.stats-strip {
+  background:var(--navy-mid);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  position:relative;
+  z-index:2;
+}
+
+.stat {
+  padding:40px 32px;
+  border-right:1px solid var(--border);
+  text-align:center;
+  position:relative;
+  transition:background .3s;
+}
+
+.stat:last-child { border-right:none; }
+.stat:hover { background:rgba(46,127,255,0.06); }
+
+.stat-num {
+  font-family:'Orbitron', sans-serif;
+  font-size:38px;
+  font-weight:900;
+  color:var(--accent);
+  line-height:1;
+  display:block;
+}
+
+.stat-label {
+  font-size:12px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-top:8px;
+  display:block;
+  font-weight:500;
+}
+
+/* ══ SECTION BASE ══ */
+section {
+  padding:110px 60px;
+  position:relative;
+}
+
+.section-eyebrow {
+  font-size:10px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:600;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.section-eyebrow::before {
+  content:'';
+  width:24px; height:2px;
+  background:var(--accent);
+}
+
+.section-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:clamp(36px,5vw,62px);
+  font-weight:700;
+  line-height:1;
+  letter-spacing:-0.5px;
+  margin-bottom:60px;
+}
+
+.section-title .hl { color:var(--accent); }
+
+/* ══ LEISTUNGEN ══ */
+.leistungen { background:var(--navy); }
+
+.leistungen-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+}
+
+.leistung-card {
+  background:var(--navy-card);
+  padding:48px 36px;
+  position:relative;
+  overflow:hidden;
+  transition:transform .3s;
+}
+
+.leistung-card::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg, rgba(46,127,255,0.08), transparent);
+  opacity:0;
+  transition:opacity .3s;
+}
+
+.leistung-card:hover { transform:translateY(-4px); }
+.leistung-card:hover::before { opacity:1; }
+
+.leistung-card::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:3px;
+  background:var(--accent);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .4s ease;
+}
+
+.leistung-card:hover::after { transform:scaleX(1); }
+
+.leistung-icon {
+  width:56px; height:56px;
+  background:var(--accent-pale);
+  border:1px solid var(--border);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  margin-bottom:28px;
+}
+
+.leistung-num {
+  position:absolute;
+  top:24px; right:28px;
+  font-family:'Orbitron', sans-serif;
+  font-size:11px;
+  color:rgba(46,127,255,0.2);
+  letter-spacing:2px;
+}
+
+.leistung-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:.5px;
+  margin-bottom:14px;
+  color:var(--white);
+}
+
+.leistung-text {
+  font-size:14px;
+  color:var(--text-muted);
+  line-height:1.7;
+  font-weight:300;
+}
+
+/* ══ VORTEILE / USP ══ */
+.vorteile {
+  background:var(--navy-deep);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:80px;
+  align-items:center;
+}
+
+.vorteile-visual {
+  position:relative;
+}
+
+.vorteil-big-card {
+  background:var(--navy-mid);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:48px;
+  position:relative;
+  overflow:hidden;
+}
+
+.vorteil-big-card::before {
+  content:'';
+  position:absolute;
+  top:-80px; right:-80px;
+  width:240px; height:240px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(46,127,255,0.2), transparent 70%);
+}
+
+.vbig-label {
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.vbig-value {
+  font-family:'Orbitron', sans-serif;
+  font-size:56px;
+  font-weight:900;
+  color:var(--white);
+  line-height:1;
+}
+
+.vbig-sub {
+  font-size:13px;
+  color:var(--text-muted);
+  margin-top:12px;
+  line-height:1.6;
+}
+
+.vbig-bar {
+  margin-top:32px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.vbig-bar-item {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:13px;
+  color:var(--text-muted);
+}
+
+.vbig-bar-track {
+  width:100%;
+  height:4px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  margin-top:6px;
+  overflow:hidden;
+}
+
+.vbig-bar-fill {
+  height:100%;
+  border-radius:2px;
+  background:linear-gradient(90deg, var(--accent), var(--accent-bright));
+  animation:barGrow 1.5s ease forwards;
+  transform-origin:left;
+}
+
+@keyframes barGrow {
+  from { transform:scaleX(0); }
+  to { transform:scaleX(1); }
+}
+
+.usp-list {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.usp-item {
+  display:flex;
+  align-items:flex-start;
+  gap:20px;
+  padding:28px 32px;
+  background:var(--navy-card);
+  border-left:3px solid transparent;
+  transition:all .3s;
+}
+
+.usp-item:hover {
+  border-left-color:var(--accent);
+  background:rgba(46,127,255,0.07);
+}
+
+.usp-icon-wrap {
+  width:40px; height:40px;
+  border-radius:6px;
+  background:var(--accent-pale);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  flex-shrink:0;
+  margin-top:2px;
+}
+
+.usp-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:.5px;
+  color:var(--white);
+  margin-bottom:6px;
+}
+
+.usp-text {
+  font-size:13px;
+  color:var(--text-muted);
+  line-height:1.65;
+  font-weight:300;
+}
+
+/* ══ ABLAUF ══ */
+.ablauf { background:var(--navy-mid); }
+
+.steps {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  position:relative;
+}
+
+.steps::before {
+  content:'';
+  position:absolute;
+  top:40px; left:12%; right:12%;
+  height:1px;
+  background:var(--border);
+}
+
+.step {
+  padding:32px 24px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+
+.step-circle {
+  width:80px; height:80px;
+  border-radius:50%;
+  background:var(--navy-deep);
+  border:2px solid var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 28px;
+  font-family:'Orbitron', sans-serif;
+  font-size:20px;
+  font-weight:900;
+  color:var(--accent);
+  box-shadow:0 0 30px rgba(46,127,255,0.25);
+  transition:all .3s;
+}
+
+.step:hover .step-circle {
+  background:var(--accent);
+  color:var(--white);
+  box-shadow:0 0 50px rgba(46,127,255,0.5);
+}
+
+.step-icon { font-size:24px; display:block; margin-bottom:6px; }
+
+.step-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:18px;
+  font-weight:700;
+  color:var(--white);
+  margin-bottom:10px;
+  letter-spacing:.5px;
+}
+
+.step-text {
+  font-size:13px;
+  color:var(--text-muted);
+  line-height:1.6;
+  font-weight:300;
+}
+
+/* ══ PREISE ══ */
+.preise { background:var(--navy); }
+
+.preise-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+}
+
+.preis-card {
+  background:var(--navy-card);
+  padding:48px 36px;
+  position:relative;
+  overflow:hidden;
+  transition:transform .3s;
+}
+
+.preis-card.featured {
+  background:var(--accent);
+}
+
+.preis-card.featured * { --text-muted: rgba(255,255,255,0.75); }
+
+.preis-card:hover { transform:translateY(-6px); }
+
+.preis-label {
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-weight:600;
+  margin-bottom:20px;
+  display:block;
+}
+
+.preis-val {
+  font-family:'Orbitron', sans-serif;
+  font-size:48px;
+  font-weight:900;
+  color:var(--white);
+  line-height:1;
+}
+
+.preis-val small {
+  font-size:20px;
+  font-weight:400;
+  opacity:.65;
+  font-family:'Outfit', sans-serif;
+}
+
+.preis-desc {
+  font-size:13px;
+  color:var(--text-muted);
+  margin-top:12px;
+  line-height:1.6;
+  font-weight:300;
+}
+
+.preis-features {
+  list-style:none;
+  margin-top:32px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.preis-features li {
+  font-size:13px;
+  color:var(--text-muted);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:300;
+}
+
+.preis-features li::before {
+  content:'✓';
+  width:18px; height:18px;
+  border-radius:50%;
+  background:rgba(46,127,255,0.15);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  color:var(--accent);
+  flex-shrink:0;
+}
+
+.preis-card.featured .preis-features li::before {
+  background:rgba(255,255,255,0.2);
+  color:var(--white);
+}
+
+/* ══ KONTAKT ══ */
+.kontakt {
+  background:var(--navy-deep);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:80px;
+  align-items:start;
+}
+
+.kontakt-info h2 { margin-bottom:24px; }
+
+.kontakt-info p {
+  font-size:16px;
+  color:var(--text-muted);
+  line-height:1.7;
+  font-weight:300;
+  margin-bottom:48px;
+}
+
+.contact-methods {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.contact-method {
+  display:flex;
+  align-items:center;
+  gap:20px;
+  padding:24px 28px;
+  background:var(--navy-card);
+  border:1px solid var(--border);
+  text-decoration:none;
+  color:var(--white);
+  transition:all .25s;
+}
+
+.contact-method:hover {
+  background:var(--accent-pale);
+  border-color:var(--accent);
+  transform:translateX(4px);
+}
+
+.cm-icon {
+  width:44px; height:44px;
+  border-radius:6px;
+  background:var(--accent-pale);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  flex-shrink:0;
+}
+
+.cm-label {
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-weight:600;
+  display:block;
+  margin-bottom:4px;
+}
+
+.cm-value {
+  font-size:15px;
+  font-weight:500;
+}
+
+/* Contact form */
+.kontakt-form {
+  background:var(--navy-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:48px;
+}
+
+.form-title {
+  font-family:'Rajdhani', sans-serif;
+  font-size:26px;
+  font-weight:700;
+  margin-bottom:32px;
+}
+
+.form-group {
+  margin-bottom:20px;
+}
+
+.form-group label {
+  display:block;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  font-weight:600;
+  margin-bottom:8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width:100%;
+  background:var(--navy-mid);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:14px 18px;
+  font-size:14px;
+  font-family:'Outfit', sans-serif;
+  color:var(--white);
+  outline:none;
+  transition:border-color .25s, box-shadow .25s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(46,127,255,0.15);
+}
+
+.form-group select {
+  appearance:none;
+  cursor:pointer;
+}
+
+.form-group textarea {
+  resize:vertical;
+  min-height:120px;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color:rgba(122,145,184,0.5);
+}
+
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+.btn-submit {
+  width:100%;
+  background:var(--accent);
+  color:var(--white);
+  border:none;
+  padding:16px;
+  border-radius:4px;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  cursor:pointer;
+  font-family:'Outfit', sans-serif;
+  transition:all .25s;
+  margin-top:8px;
+  box-shadow:0 0 30px rgba(46,127,255,0.3);
+}
+
+.btn-submit:hover {
+  background:#1a6ee8;
+  transform:translateY(-2px);
+  box-shadow:0 8px 40px rgba(46,127,255,0.5);
+}
+
+/* ══ FOOTER ══ */
+footer {
+  background:var(--navy-mid);
+  border-top:1px solid var(--border);
+  padding:60px 60px 40px;
+}
+
+.footer-top {
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr;
+  gap:60px;
+  margin-bottom:60px;
+}
+
+.footer-brand-area .footer-logo {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+  text-decoration:none;
+}
+
+.footer-brand-name {
+  font-family:'Orbitron', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  color:var(--white);
+  letter-spacing:2px;
+}
+
+.footer-brand-name .amp { color:var(--accent); }
+
+.footer-tagline {
+  font-size:13px;
+  color:var(--text-muted);
+  line-height:1.7;
+  font-weight:300;
+  max-width:280px;
+}
+
+.footer-col-title {
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.footer-links {
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.footer-links a {
+  text-decoration:none;
+  font-size:13px;
+  color:var(--text-muted);
+  font-weight:300;
+  transition:color .2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.footer-links a::before { content:'→'; font-size:11px; color:var(--accent); }
+.footer-links a:hover { color:var(--white); }
+
+.footer-bottom {
+  border-top:1px solid var(--border);
+  padding-top:32px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+.footer-copy {
+  font-size:12px;
+  color:var(--text-muted);
+  letter-spacing:1px;
+}
+
+.footer-badges {
+  display:flex;
+  gap:8px;
+}
+
+.footer-badge {
+  padding:4px 12px;
+  border:1px solid var(--border);
+  border-radius:2px;
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--text-muted);
+  text-transform:uppercase;
+}
+
+/* ══ ANIMATION ══ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.reveal {
+  opacity:0;
+  transform:translateY(30px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.visible {
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px) {
+  nav { padding:0 24px; }
+  .nav-links { display:none; }
+  .hero { padding:100px 24px 80px; }
+  section { padding:80px 24px; }
+  .stats-strip { grid-template-columns:1fr 1fr; }
+  .stat { border-bottom:1px solid var(--border); }
+  .leistungen-grid { grid-template-columns:1fr; }
+  .vorteile { grid-template-columns:1fr; padding:80px 24px; gap:40px; }
+  .steps { grid-template-columns:1fr 1fr; }
+  .steps::before { display:none; }
+  .preise-grid { grid-template-columns:1fr; }
+  .kontakt { grid-template-columns:1fr; padding:80px 24px; gap:40px; }
+  .footer-top { grid-template-columns:1fr; gap:32px; }
+  footer { padding:48px 24px 32px; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+  .form-row { grid-template-columns:1fr; }
+}
+
+@media(max-width:500px) {
+  .hero-title { font-size:44px; }
+  .steps { grid-template-columns:1fr; }
+  .hero-actions { flex-direction:column; }
+  .btn-primary, .btn-secondary { text-align:center; justify-content:center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ NAV ══════════ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg class="logo-hex" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="23,2 42,12.5 42,33.5 23,44 4,33.5 4,12.5" fill="#081428" stroke="#2e7fff" stroke-width="1.5"/>
+      <!-- Car -->
+      <path d="M11 26 L13 21 L16 19 L30 19 L33 21 L35 26 L35 31 L11 31 Z" fill="#2e7fff" opacity=".9"/>
+      <rect x="15" y="19" width="7" height="7" rx="1" fill="#081428" opacity=".7"/>
+      <rect x="24" y="19" width="7" height="7" rx="1" fill="#081428" opacity=".7"/>
+      <circle cx="17" cy="32" r="3" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1.2"/>
+      <circle cx="29" cy="32" r="3" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1.2"/>
+      <!-- Speed lines -->
+      <rect x="5" y="22" width="5" height="1.5" rx=".75" fill="#2e7fff" opacity=".5"/>
+      <rect x="4" y="25.5" width="6" height="1.5" rx=".75" fill="#2e7fff" opacity=".3"/>
+      <rect x="5" y="29" width="5" height="1.5" rx=".75" fill="#2e7fff" opacity=".2"/>
+    </svg>
+    <div class="nav-brand">
+      <div class="nav-brand-main">N <span class="amp">&amp;</span> K</div>
+      <div class="nav-brand-sub">Fahrzeugüberführung</div>
+    </div>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#leistungen">Leistungen</a></li>
+    <li><a href="#vorteile">Vorteile</a></li>
+    <li><a href="#ablauf">Ablauf</a></li>
+    <li><a href="#preise">Preise</a></li>
+    <li><a href="#kontakt" class="nav-cta">Jetzt anfragen</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero" id="home">
+  <div class="hero-eyebrow">Bundesweit verfügbar</div>
+
+  <h1 class="hero-title">
+    IHR FAHRZEUG.<br>
+    <span class="line2">UNSER</span>
+    <span class="line3">AUFTRAG.</span>
+  </h1>
+
+  <p class="hero-sub">
+    <strong>N & K Fahrzeugüberführung</strong> — professionelle Fahrzeuglogistik für Autohäuser, Leasingfirmen und Geschäftskunden. Schnell verfügbar, persönlich betreut, absolut zuverlässig.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#kontakt" class="btn-primary">
+      <span>Jetzt anfragen</span>
+      <span>→</span>
+    </a>
+    <a href="#leistungen" class="btn-secondary">
+      <span>Leistungen ansehen</span>
+    </a>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    <span>Scrollen</span>
+  </div>
+</section>
+
+<!-- ══════════ STATS ══════════ -->
+<div class="stats-strip reveal">
+  <div class="stat">
+    <span class="stat-num">120+</span>
+    <span class="stat-label">Erfolgreiche Überführungen</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">24h</span>
+    <span class="stat-label">Reaktionszeit</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">DE</span>
+    <span class="stat-label">Bundesweit aktiv</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">100%</span>
+    <span class="stat-label">Kundenzufriedenheit</span>
+  </div>
+</div>
+
+<!-- ══════════ LEISTUNGEN ══════════ -->
+<section class="leistungen" id="leistungen">
+  <div class="section-eyebrow reveal">Unsere Leistungen</div>
+  <h2 class="section-title reveal">WAS WIR <span class="hl">LEISTEN</span></h2>
+
+  <div class="leistungen-grid">
+    <div class="leistung-card reveal">
+      <div class="leistung-num">01</div>
+      <div class="leistung-icon">🚗</div>
+      <div class="leistung-title">Einzelüberführungen</div>
+      <p class="leistung-text">Zuverlässige Überführung einzelner Fahrzeuge — bundesweit, kurzfristig und ohne bürokratischen Aufwand. Direkt und unkompliziert.</p>
+    </div>
+    <div class="leistung-card reveal">
+      <div class="leistung-num">02</div>
+      <div class="leistung-icon">🏢</div>
+      <div class="leistung-title">Autohaus-Service</div>
+      <p class="leistung-text">Wir sind der verlässliche Partner für Autohäuser, die regelmäßig Fahrzeuge bewegen müssen — flexibel, professionell und mit fester Ansprechperson.</p>
+    </div>
+    <div class="leistung-card reveal">
+      <div class="leistung-num">03</div>
+      <div class="leistung-icon">📋</div>
+      <div class="leistung-title">Leasing-Rückläufer</div>
+      <p class="leistung-text">Professionelle Überführung von Leasingfahrzeugen an Depot, Händler oder Aufbereiter — pünktlich, sicher und dokumentiert.</p>
+    </div>
+    <div class="leistung-card reveal">
+      <div class="leistung-num">04</div>
+      <div class="leistung-icon">🏗️</div>
+      <div class="leistung-title">Flottenmanagement</div>
+      <p class="leistung-text">Unterstützung bei der Fahrzeugbewegung für Flottenbetreiber — mehrere Fahrzeuge koordiniert und termingerecht übergeben.</p>
+    </div>
+    <div class="leistung-card reveal">
+      <div class="leistung-num">05</div>
+      <div class="leistung-icon">⚡</div>
+      <div class="leistung-title">Kurzfristige Einsätze</div>
+      <p class="leistung-text">Notfall-Überführungen und Last-Minute-Aufträge sind unsere Stärke. Wenn es schnell gehen muss — wir sind da.</p>
+    </div>
+    <div class="leistung-card reveal">
+      <div class="leistung-num">06</div>
+      <div class="leistung-icon">🤝</div>
+      <div class="leistung-title">Rahmenverträge</div>
+      <p class="leistung-text">Für Stammkunden bieten wir maßgeschneiderte Konditionen und garantierte Verfügbarkeit — langfristige Partnerschaft statt anonymer Aufträge.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ VORTEILE ══════════ -->
+<section class="vorteile" id="vorteile">
+  <div class="vorteile-visual reveal">
+    <div class="vorteil-big-card">
+      <div class="vbig-label">Skalierungspotenzial</div>
+      <div class="vbig-value">4.000 €+</div>
+      <div class="vbig-sub">Monatlicher Gewinn bei zwei Fahrern — mit minimalem Startkapital und linearer Skalierbarkeit.</div>
+
+      <div class="vbig-bar">
+        <div>
+          <div class="vbig-bar-item">
+            <span>Autohäuser</span><span style="color:var(--accent)">★★★★★</span>
+          </div>
+          <div class="vbig-bar-track"><div class="vbig-bar-fill" style="width:92%"></div></div>
+        </div>
+        <div>
+          <div class="vbig-bar-item">
+            <span>Leasingfirmen</span><span style="color:var(--accent)">★★★★☆</span>
+          </div>
+          <div class="vbig-bar-track"><div class="vbig-bar-fill" style="width:78%;animation-delay:.2s"></div></div>
+        </div>
+        <div>
+          <div class="vbig-bar-item">
+            <span>Flottenbetreiber</span><span style="color:var(--accent)">★★★★☆</span>
+          </div>
+          <div class="vbig-bar-track"><div class="vbig-bar-fill" style="width:70%;animation-delay:.4s"></div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:36px;padding-top:28px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:center;">
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--gold)">3–5</div>
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:4px">Fahrten / Woche</div>
+        </div>
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:var(--gold)">180€</div>
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:4px">Max. pro Fahrt</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-eyebrow reveal">Warum N & K</div>
+    <h2 class="section-title reveal">UNSERE <span class="hl">STÄRKEN</span></h2>
+
+    <div class="usp-list">
+      <div class="usp-item reveal">
+        <div class="usp-icon-wrap">⚡</div>
+        <div>
+          <div class="usp-title">Sofort verfügbar</div>
+          <p class="usp-text">Kein wochenlanger Vorlauf. Wir reagieren innerhalb von 24 Stunden und sind wo Sie uns brauchen.</p>
+        </div>
+      </div>
+      <div class="usp-item reveal">
+        <div class="usp-icon-wrap">🙋</div>
+        <div>
+          <div class="usp-title">Fester Ansprechpartner</div>
+          <p class="usp-text">Kein Call-Center, keine Warteschleife. Sie sprechen direkt mit uns — persönlich und auf Augenhöhe.</p>
+        </div>
+      </div>
+      <div class="usp-item reveal">
+        <div class="usp-icon-wrap">🎯</div>
+        <div>
+          <div class="usp-title">Flexibel & maßgeschneidert</div>
+          <p class="usp-text">Jeder Auftrag ist anders. Wir passen uns an Ihre Anforderungen an — nicht umgekehrt.</p>
+        </div>
+      </div>
+      <div class="usp-item reveal">
+        <div class="usp-icon-wrap">🔒</div>
+        <div>
+          <div class="usp-title">Absolut zuverlässig</div>
+          <p class="usp-text">Ihr Fahrzeug kommt pünktlich und sicher an. Versprochen. Das ist unser Anspruch bei jedem Auftrag.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ABLAUF ══════════ -->
+<section class="ablauf" id="ablauf">
+  <div class="section-eyebrow reveal" style="justify-content:center">So einfach geht's</div>
+  <h2 class="section-title reveal" style="text-align:center">DER <span class="hl">ABLAUF</span></h2>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-circle">
+        <span class="step-icon">📞</span>
+      </div>
+      <div class="step-title">Kontakt</div>
+      <p class="step-text">Sie melden sich — per Telefon, E-Mail oder Kontaktformular. Wir antworten innerhalb von 24h.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-circle">
+        <span class="step-icon">📋</span>
+      </div>
+      <div class="step-title">Angebot</div>
+      <p class="step-text">Wir besprechen Ihre Anforderungen und erstellen ein individuelles, transparentes Angebot.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-circle">
+        <span class="step-icon">🔑</span>
+      </div>
+      <div class="step-title">Übergabe</div>
+      <p class="step-text">Schlüsselübergabe zum vereinbarten Termin — unkompliziert und professionell dokumentiert.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-circle">
+        <span class="step-icon">✅</span>
+      </div>
+      <div class="step-title">Ablieferung</div>
+      <p class="step-text">Ihr Fahrzeug kommt pünktlich am Zielort an. Sie erhalten eine Bestätigung und Ablieferungsnachweis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PREISE ══════════ -->
+<section class="preise" id="preise">
+  <div class="section-eyebrow reveal">Transparente Preise</div>
+  <h2 class="section-title reveal">FAIRE <span class="hl">KONDITIONEN</span></h2>
+
+  <div class="preise-grid">
+    <div class="preis-card reveal">
+      <span class="preis-label">Einzel-Überführung</span>
+      <div class="preis-val">120 <small>€</small></div>
+      <p class="preis-desc">Für einzelne Fahrzeuge bei gelegentlichem Bedarf. Flexible Buchung ohne Vertrag.</p>
+      <ul class="preis-features">
+        <li>Bundesweit</li>
+        <li>Persönliche Betreuung</li>
+        <li>Kurzfristig verfügbar</li>
+        <li>Ablieferungsnachweis</li>
+      </ul>
+    </div>
+
+    <div class="preis-card featured reveal">
+      <span class="preis-label" style="color:rgba(255,255,255,.75)">⭐ Empfohlen — Stammkunde</span>
+      <div class="preis-val">Ab 100 <small>€</small></div>
+      <p class="preis-desc" style="color:rgba(255,255,255,.8)">Für regelmäßige Aufträge. Günstigere Konditionen, feste Priorität und garantierte Verfügbarkeit.</p>
+      <ul class="preis-features" style="color:rgba(255,255,255,.8)">
+        <li>Rabatt ab 5 Fahrten/Monat</li>
+        <li>Fester Ansprechpartner</li>
+        <li>Priorisierte Verfügbarkeit</li>
+        <li>Rahmenvertrag optional</li>
+      </ul>
+    </div>
+
+    <div class="preis-card reveal">
+      <span class="preis-label">Individuelle Anfrage</span>
+      <div class="preis-val" style="font-size:36px">Auf Anfrage</div>
+      <p class="preis-desc">Für Flottenüberführungen, Sonderaufträge oder wiederkehrende Großmengen. Wir erstellen Ihr persönliches Angebot.</p>
+      <ul class="preis-features">
+        <li>Maßgeschneiderte Konditionen</li>
+        <li>Mehrfahrzeug-Koordination</li>
+        <li>SLA-Vereinbarungen möglich</li>
+        <li>Rechnungsstellung flexibel</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:28px;letter-spacing:1px;">* Preise zzgl. MwSt. | Genauer Preis abhängig von Strecke & Aufwand | Kostenloses Angebot auf Anfrage</p>
+</section>
+
+<!-- ══════════ KONTAKT ══════════ -->
+<section class="kontakt" id="kontakt">
+  <div class="kontakt-info">
+    <div class="section-eyebrow reveal">Kontakt</div>
+    <h2 class="section-title reveal">BEREIT,<br>LOSZUFAHREN?</h2>
+    <p class="reveal">Schreiben Sie uns oder rufen Sie direkt an — wir melden uns innerhalb von 24 Stunden bei Ihnen. Kein Kleingedrucktes, keine Wartezeiten.</p>
+
+    <div class="contact-methods reveal">
+      <a href="tel:+4900000000000" class="contact-method">
+        <div class="cm-icon">📞</div>
+        <div>
+          <span class="cm-label">Telefon</span>
+          <span class="cm-value">+49 (0) — auf Anfrage</span>
+        </div>
+      </a>
+      <a href="/cdn-cgi/l/email-protection#6900070f06290702440f08011b130c1c0e1c0c0b0c1b0f1c0c011b1c070e470d0c" class="contact-method">
+        <div class="cm-icon">✉️</div>
+        <div>
+          <span class="cm-label">E-Mail</span>
+          <span class="cm-value"><span class="__cf_email__" data-cfemail="d3babdb5bc93bdb8feb5b2bba1a9b6a6b4a6b6b1b6a1b5a6b6bba1a6bdb4fdb7b6">[email&#160;protected]</span></span>
+        </div>
+      </a>
+      <a href="#" class="contact-method">
+        <div class="cm-icon">📍</div>
+        <div>
+          <span class="cm-label">Gebiet</span>
+          <span class="cm-value">Bundesweit — ganz Deutschland</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="kontakt-form reveal">
+    <div class="form-title">Anfrage senden</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Vorname</label>
+        <input type="text" id="kf-vorname" placeholder="Max">
+      </div>
+      <div class="form-group">
+        <label>Nachname</label>
+        <input type="text" id="kf-nachname" placeholder="Mustermann">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Unternehmen</label>
+      <input type="text" id="kf-unternehmen" placeholder="Autohaus Mustermann GmbH">
+    </div>
+
+    <div class="form-group">
+      <label>E-Mail</label>
+      <input type="email" id="kf-email" placeholder="max@mustermann.de">
+    </div>
+
+    <div class="form-group">
+      <label>Art der Anfrage</label>
+      <select id="kf-art">
+        <option value="">Bitte wählen...</option>
+        <option>Einzelüberführung</option>
+        <option>Regelmäßige Aufträge</option>
+        <option>Leasing-Rückläufer</option>
+        <option>Flottenüberführung</option>
+        <option>Sonstiges</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Nachricht</label>
+      <textarea id="kf-nachricht" placeholder="Wohin soll das Fahrzeug? Wann? Irgendwelche Besonderheiten?"></textarea>
+    </div>
+
+    <div id="form-success" style="display:none;background:rgba(22,163,74,0.12);border:1px solid #16a34a;border-radius:8px;padding:14px 18px;margin-bottom:14px;color:#16a34a;font-size:14px">✅ <strong>Anfrage gesendet!</strong> Wir melden uns innerhalb von 24 Stunden.</div>
+    <div id="form-error" style="display:none;background:rgba(220,38,38,0.12);border:1px solid #dc2626;border-radius:8px;padding:12px 16px;margin-bottom:14px;color:#fca5a5;font-size:13px"></div>
+    <button class="btn-submit" id="kf-submit" onclick="submitAnfrage()">Anfrage absenden →</button>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand-area">
+      <a href="#" class="footer-logo">
+        <svg width="36" height="36" viewBox="0 0 46 46" fill="none">
+          <polygon points="23,2 42,12.5 42,33.5 23,44 4,33.5 4,12.5" fill="#081428" stroke="#2e7fff" stroke-width="1.5"/>
+          <path d="M11 26 L13 21 L16 19 L30 19 L33 21 L35 26 L35 31 L11 31 Z" fill="#2e7fff" opacity=".9"/>
+          <circle cx="17" cy="32" r="3" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1.2"/>
+          <circle cx="29" cy="32" r="3" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1.2"/>
+        </svg>
+        <div class="footer-brand-name">N <span class="amp">&amp;</span> K FAHRZEUGÜBERFÜHRUNG</div>
+      </a>
+      <p class="footer-tagline">Schnell. Zuverlässig. Persönlich. — Ihr professioneller Partner für Fahrzeuglogistik in ganz Deutschland.</p>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Navigation</div>
+      <ul class="footer-links">
+        <li><a href="#leistungen">Leistungen</a></li>
+        <li><a href="#vorteile">Vorteile</a></li>
+        <li><a href="#ablauf">Ablauf</a></li>
+        <li><a href="#preise">Preise</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Rechtliches</div>
+      <ul class="footer-links">
+        <li><a href="#">Impressum</a></li>
+        <li><a href="#">Datenschutz</a></li>
+        <li><a href="#">AGB</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 N & K Fahrzeugüberführung GbR — Alle Rechte vorbehalten</div>
+    <div class="footer-badges">
+      <span class="footer-badge">GbR</span>
+      <span class="footer-badge">Deutschland</span>
+      <span class="footer-badge">Gegründet 2025</span>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Nav scro
