@@ -38,16 +38,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .nav-cta:hover{background:var(--blue2)!important;transform:translateY(-1px)}
 
 /* HERO */
-.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:120px 56px 80px;position:relative;overflow:hidden;gap:40px}
-.hero-visual{position:relative;z-index:1;display:flex;align-items:center;justify-content:center}
-.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(46,127,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(46,127,255,.05) 1px,transparent 1px);background-size:55px 55px;mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 20%,transparent 100%)}
-.hero::after{content:'';position:absolute;top:5%;right:5%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(46,127,255,.12),transparent 70%);pointer-events:none}
+.hero{height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 56px;position:relative;overflow:hidden}
+.hero-content{position:relative;z-index:2;max-width:620px}
+.hero-visual{display:none}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(46,127,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(46,127,255,.05) 1px,transparent 1px);background-size:55px 55px;mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 20%,transparent 100%);pointer-events:none}
+.hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:55%;background:linear-gradient(to left,rgba(5,13,26,0) 0%,rgba(5,13,26,0) 40%,rgba(5,13,26,0.6) 70%,rgba(5,13,26,1) 100%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cdefs%3E%3CradialGradient id='g' cx='60%25' cy='50%25' r='55%25'%3E%3Cstop offset='0%25' stop-color='%232e7fff' stop-opacity='.12'/%3E%3Cstop offset='100%25' stop-color='%232e7fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='800' height='800' fill='url(%23g)'/%3E%3C/svg%3E") center/cover no-repeat;pointer-events:none}
+
+.hero-grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(46,127,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(46,127,255,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 70% 50%,black,transparent);pointer-events:none}
 .hero-eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:20px;position:relative;z-index:1;display:flex;align-items:center;gap:10px;opacity:0;animation:fadeUp .7s .1s forwards}
 .hero-eyebrow::before{content:'';width:28px;height:2px;background:var(--blue)}
 .hero-title{font-family:'Rajdhani',sans-serif;font-size:clamp(56px,9vw,130px);font-weight:700;line-height:.9;letter-spacing:-1px;position:relative;z-index:1;opacity:0;animation:fadeUp .8s .2s forwards}
 .hero-title .hl{color:var(--blue);display:block}
 .hero-title .outline{-webkit-text-stroke:1px rgba(255,255,255,.2);color:transparent;display:block}
-.hero-sub{font-size:18px;font-weight:300;color:var(--muted);max-width:500px;line-height:1.7;margin-top:32px;position:relative;z-index:1;opacity:0;animation:fadeUp .7s .35s forwards}
+.hero-sub{font-size:18px;font-weight:300;color:var(--muted);max-width:560px;line-height:1.7;margin-top:32px;position:relative;z-index:1;opacity:0;animation:fadeUp .7s .35s forwards}
 .hero-sub strong{color:var(--white);font-weight:500}
 .hero-actions{display:flex;gap:14px;margin-top:40px;position:relative;z-index:1;opacity:0;animation:fadeUp .7s .5s forwards;flex-wrap:wrap}
 .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:var(--white);padding:15px 34px;border-radius:5px;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:.5px;transition:all .25s;box-shadow:0 0 35px rgba(46,127,255,.3)}
@@ -169,6 +172,21 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
 .footer-badges{display:flex;gap:8px}
 .footer-badge{padding:4px 11px;border:1px solid var(--border);border-radius:2px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
 
+
+/* HERO VISUAL CARDS */
+.hv-card{background:rgba(13,31,60,0.8);border:1px solid rgba(46,127,255,0.2);border-radius:10px;backdrop-filter:blur(10px);transition:border-color .3s}
+.hv-card:hover{border-color:rgba(46,127,255,0.5)}
+.hv-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.hv-value{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--white);line-height:1;margin-bottom:4px}
+.hv-sub{font-size:11px;color:var(--muted);margin-bottom:12px}
+.hv-bar{height:3px;background:rgba(46,127,255,.15);border-radius:2px;overflow:hidden}
+.hv-bar-fill{height:100%;border-radius:2px;animation:growBar 1.5s ease forwards}
+.hv-card-mini{padding:16px;text-align:center}
+.hv-mini-title{font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px}
+.hv-mini-sub{font-size:10px;color:var(--muted)}
+@keyframes growBar{from{width:0}to{width:var(--w,100%)}}
+@keyframes moveDot{0%{left:5%}60%{left:85%}100%{left:85%;opacity:0}}
+
 /* REVEAL */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
@@ -185,8 +203,8 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
   nav{padding:0 24px}
   .nav-links{display:none}
   section{padding:70px 24px}
-  .hero{padding:100px 24px 70px;grid-template-columns:1fr}
-  .hero-visual{display:none}
+  .hero{padding:100px 24px 70px;height:auto;min-height:100vh}
+  .hero-content{max-width:100%}
   .strip{grid-template-columns:1fr 1fr}
   .strip-item{border-bottom:1px solid var(--border)}
   .why-grid,.forwho-grid,.leistungen-grid{grid-template-columns:1fr}
@@ -196,6 +214,98 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
   .footer-top{grid-template-columns:1fr;gap:28px}
   .footer-bottom{flex-direction:column;text-align:center}
   .form-row{grid-template-columns:1fr}
+}
+
+/* ══ LIGHT MODE ══ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --navy:    #f0f4ff;
+    --navy2:   #e4eaf8;
+    --navy3:   #d8e1f5;
+    --blue:    #1a5fd4;
+    --blue2:   #1250b8;
+    --pale:    rgba(26,95,212,0.08);
+    --gold:    #c17f00;
+    --white:   #0d1428;
+    --muted:   #4a5a7a;
+    --border:  rgba(26,95,212,0.18);
+  }
+
+  body { background:#f0f4ff; color:#0d1428; }
+
+  nav {
+    background:rgba(240,244,255,0.95) !important;
+    border-bottom:1px solid rgba(26,95,212,0.15);
+  }
+  .nav-brand { color:#0d1428; }
+  .nav-sub { color:#4a5a7a; }
+  .nav-links a { color:#4a5a7a; }
+  .nav-links a:hover { color:#0d1428; }
+
+  .hero { background:#f0f4ff; }
+  .hero-title { color:#0d1428; }
+  .hero-title .outline { -webkit-text-stroke:1px rgba(13,20,40,.15); }
+  .hero::after { opacity:.5; }
+
+  .strip { background:#e4eaf8; border-color:rgba(26,95,212,0.12); }
+  .strip-item { border-color:rgba(26,95,212,0.12); }
+  .strip-item:hover { background:rgba(26,95,212,0.05); }
+  .strip-label { color:#4a5a7a; }
+
+  .why-card,.leistung-card,.forwho-card { background:#e4eaf8; }
+  .why-text,.leistung-text,.forwho-text { color:#4a5a7a; }
+  .why-icon,.leistung-icon { background:rgba(26,95,212,0.08); border-color:rgba(26,95,212,0.15); }
+
+  .step-circle { background:#f0f4ff; }
+  .step-text { color:#4a5a7a; }
+
+  .versprechen-quote { background:rgba(26,95,212,0.06); }
+  .versprechen-quote-text { color:#0d1428; }
+  .versprechen-item { background:#e4eaf8; }
+  .v-title { color:#0d1428; }
+  .v-sub { color:#4a5a7a; }
+  .v-icon { background:rgba(26,95,212,0.08); border-color:rgba(26,95,212,0.15); }
+
+  .contact-method { background:#e4eaf8; border-color:rgba(26,95,212,0.15); color:#0d1428; }
+  .contact-method:hover { background:rgba(26,95,212,0.1); }
+  .cm-icon { background:rgba(26,95,212,0.08); border-color:rgba(26,95,212,0.15); }
+  .cm-label { color:#4a5a7a; }
+
+  .kontakt-form { background:#e4eaf8; border-color:rgba(26,95,212,0.15); }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background:#f0f4ff;
+    border-color:rgba(26,95,212,0.2);
+    color:#0d1428;
+  }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color:rgba(74,90,122,.5); }
+  .form-group label { color:#4a5a7a; }
+
+  footer { background:#e4eaf8; border-color:rgba(26,95,212,0.12); }
+  .footer-tagline { color:#4a5a7a; }
+  .footer-links a { color:#4a5a7a; }
+  .footer-links a:hover { color:#0d1428; }
+  .footer-copy { color:#4a5a7a; }
+  .footer-badge { color:#4a5a7a; border-color:rgba(26,95,212,0.15); }
+  .footer-bottom { border-color:rgba(26,95,212,0.12); }
+
+  .section-eyebrow { color:var(--blue2); }
+  .section-title .hl { color:var(--blue2); }
+
+  .promise-item { color:#4a5a7a; }
+
+  .hv-card { background:rgba(228,234,248,0.9); border-color:rgba(26,95,212,0.2); }
+  .hv-label { color:#4a5a7a; }
+  .hv-sub { color:#4a5a7a; }
+  .hv-mini-title { color:#0d1428; }
+  .hv-mini-sub { color:#4a5a7a; }
+
+  ::-webkit-scrollbar-track { background:#e4eaf8; }
+
+  /* Hinweise section */
+  .forwho-card:hover { background:rgba(26,95,212,0.06); }
 }
 </style>
 </head>
@@ -227,6 +337,7 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
 
 <!-- HERO -->
 <section class="hero" id="home">
+  <div class="hero-grid-overlay"></div>
   <div class="hero-content">
   <div class="hero-eyebrow">Bundesweit verfügbar</div>
   <h1 class="hero-title">
@@ -235,7 +346,7 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
     <span class="outline">AM ZIEL.</span>
   </h1>
   <p class="hero-sub">
-    N &amp; K Fahrzeugüberführung — <strong>Ihr persönlicher Partner</strong> für professionelle Fahrzeuglogistik. Schnell verfügbar, direkt erreichbar, absolut zuverlässig.
+    Ihr <strong>persönlicher Partner</strong> für professionelle Fahrzeugüberführungen in ganz Deutschland. Schnell verfügbar, direkt erreichbar, absolut zuverlässig.
   </p>
   <div class="hero-actions">
     <a href="#kontakt" class="btn-primary">Kostenlos anfragen →</a>
@@ -248,155 +359,6 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
     <div class="promise-item"><div class="promise-dot"></div>Kurzfristig verfügbar</div>
   </div><!-- /hero-content -->
 
-  <!-- HERO VISUAL -->
-  <div class="hero-visual">
-    <svg viewBox="0 0 520 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:520px;opacity:.92">
-      <defs>
-        <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#2e7fff" stop-opacity=".25"/>
-          <stop offset="100%" stop-color="#2e7fff" stop-opacity="0"/>
-        </radialGradient>
-        <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#2e7fff" stop-opacity=".15"/>
-          <stop offset="100%" stop-color="#2e7fff" stop-opacity="0"/>
-        </radialGradient>
-        <filter id="blur1"><feGaussianBlur stdDeviation="18"/></filter>
-        <filter id="blur2"><feGaussianBlur stdDeviation="8"/></filter>
-        <linearGradient id="carGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#1a3a6e"/>
-          <stop offset="100%" stop-color="#0a1828"/>
-        </linearGradient>
-        <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#243d6e"/>
-          <stop offset="100%" stop-color="#0f1e38"/>
-        </linearGradient>
-        <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#0a1828" stop-opacity="0"/>
-          <stop offset="20%" stop-color="#0d1f3c" stop-opacity="1"/>
-          <stop offset="80%" stop-color="#0d1f3c" stop-opacity="1"/>
-          <stop offset="100%" stop-color="#0a1828" stop-opacity="0"/>
-        </linearGradient>
-        <clipPath id="carClip">
-          <rect x="60" y="120" width="400" height="200" rx="4"/>
-        </clipPath>
-      </defs>
-
-      <!-- Background glow -->
-      <ellipse cx="260" cy="200" rx="200" ry="140" fill="url(#glow1)" filter="url(#blur1)"/>
-
-      <!-- Road -->
-      <rect x="0" y="290" width="520" height="50" fill="url(#roadGrad)" rx="0"/>
-      <rect x="0" y="290" width="520" height="2" fill="#2e7fff" opacity=".15"/>
-      <!-- Road dashes -->
-      <rect x="40" y="313" width="60" height="4" rx="2" fill="#2e7fff" opacity=".2"/>
-      <rect x="150" y="313" width="60" height="4" rx="2" fill="#2e7fff" opacity=".2"/>
-      <rect x="260" y="313" width="60" height="4" rx="2" fill="#2e7fff" opacity=".2"/>
-      <rect x="370" y="313" width="60" height="4" rx="2" fill="#2e7fff" opacity=".2"/>
-
-      <!-- Car shadow -->
-      <ellipse cx="262" cy="296" rx="145" ry="10" fill="#2e7fff" opacity=".12" filter="url(#blur2)"/>
-
-      <!-- CAR BODY -->
-      <!-- Main body lower -->
-      <path d="M 80 255 L 80 220 Q 82 215 90 213 L 160 200 L 190 168 Q 200 158 220 155 L 310 152 Q 335 152 355 162 L 385 185 L 430 195 Q 442 198 445 208 L 447 240 Q 447 250 440 255 Z" fill="url(#carGrad)" stroke="#2e7fff" stroke-width="1" stroke-opacity=".3"/>
-
-      <!-- Roof -->
-      <path d="M 192 168 Q 202 150 225 146 L 308 143 Q 336 143 354 158 L 382 182" fill="url(#roofGrad)" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".4"/>
-
-      <!-- Windshield front -->
-      <path d="M 355 162 L 383 184 L 385 185 L 355 162 Z" fill="none"/>
-      <path d="M 356 164 L 381 185 L 388 185 L 366 167 Z" fill="#1a3560" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".5"/>
-
-      <!-- Windshield rear -->
-      <path d="M 192 168 L 225 148 L 222 168 Z" fill="#1a3560" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".4"/>
-
-      <!-- Windows side -->
-      <path d="M 230 155 L 260 150 L 258 168 L 228 170 Z" fill="#1a3560" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".4"/>
-      <path d="M 268 149 L 308 148 L 308 166 L 266 167 Z" fill="#1a3560" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".4"/>
-      <path d="M 316 148 L 350 155 L 352 170 L 314 168 Z" fill="#1a3560" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".4"/>
-
-      <!-- Door lines -->
-      <line x1="262" y1="168" x2="264" y2="255" stroke="#2e7fff" stroke-width=".6" stroke-opacity=".3"/>
-      <line x1="316" y1="166" x2="318" y2="255" stroke="#2e7fff" stroke-width=".6" stroke-opacity=".3"/>
-
-      <!-- Front bumper detail -->
-      <path d="M 80 240 L 80 255 L 100 258 L 80 240 Z" fill="#0d1f3c" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".4"/>
-      <rect x="82" y="243" width="28" height="5" rx="2" fill="#2e7fff" opacity=".15"/>
-
-      <!-- Rear detail -->
-      <path d="M 430 240 L 445 240 L 442 258 L 420 258 Z" fill="#0d1f3c" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".3"/>
-      <rect x="415" y="243" width="24" height="5" rx="2" fill="#2e7fff" opacity=".15"/>
-
-      <!-- WHEELS -->
-      <!-- Front wheel -->
-      <circle cx="155" cy="272" r="28" fill="#060f1e" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".5"/>
-      <circle cx="155" cy="272" r="20" fill="#0a1828" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".35"/>
-      <circle cx="155" cy="272" r="8" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1" stroke-opacity=".6"/>
-      <!-- Spokes front -->
-      <line x1="155" y1="254" x2="155" y2="262" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="155" y1="282" x2="155" y2="290" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="137" y1="272" x2="145" y2="272" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="165" y1="272" x2="173" y2="272" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="142" y1="259" x2="148" y2="265" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="162" y1="279" x2="168" y2="285" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="142" y1="285" x2="148" y2="279" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="162" y1="265" x2="168" y2="259" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-
-      <!-- Rear wheel -->
-      <circle cx="372" cy="272" r="28" fill="#060f1e" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".5"/>
-      <circle cx="372" cy="272" r="20" fill="#0a1828" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".35"/>
-      <circle cx="372" cy="272" r="8" fill="#0d1f3c" stroke="#2e7fff" stroke-width="1" stroke-opacity=".6"/>
-      <!-- Spokes rear -->
-      <line x1="372" y1="254" x2="372" y2="262" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="372" y1="282" x2="372" y2="290" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="354" y1="272" x2="362" y2="272" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="382" y1="272" x2="390" y2="272" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".4"/>
-      <line x1="359" y1="259" x2="365" y2="265" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="379" y1="279" x2="385" y2="285" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="359" y1="285" x2="365" y2="279" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-      <line x1="379" y1="265" x2="385" y2="259" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".3"/>
-
-      <!-- Headlight glow -->
-      <ellipse cx="84" cy="228" rx="18" ry="8" fill="#2e7fff" opacity=".2" filter="url(#blur2)"/>
-      <rect x="83" y="223" width="16" height="6" rx="3" fill="#2e7fff" opacity=".6"/>
-      <rect x="83" y="232" width="10" height="3" rx="1.5" fill="#2e7fff" opacity=".4"/>
-
-      <!-- Taillight -->
-      <rect x="429" y="223" width="14" height="6" rx="3" fill="#e05" opacity=".7"/>
-      <rect x="431" y="232" width="10" height="3" rx="1.5" fill="#e05" opacity=".4"/>
-
-      <!-- Speed lines left -->
-      <line x1="10" y1="210" x2="72" y2="210" stroke="#2e7fff" stroke-width="1.5" stroke-opacity=".35" stroke-dasharray="6 4"/>
-      <line x1="0" y1="223" x2="70" y2="223" stroke="#2e7fff" stroke-width="1" stroke-opacity=".2" stroke-dasharray="8 6"/>
-      <line x1="15" y1="236" x2="72" y2="236" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".15" stroke-dasharray="5 5"/>
-
-      <!-- Floating info cards -->
-      <!-- Card 1: top left -->
-      <rect x="10" y="60" width="130" height="46" rx="6" fill="#0d1f3c" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".4"/>
-      <circle cx="30" cy="83" r="10" fill="#2e7fff" opacity=".15" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".5"/>
-      <text x="30" y="87" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" fill="#2e7fff" opacity=".9">⚡</text>
-      <text x="46" y="79" font-family="Outfit,sans-serif" font-size="9" fill="#7a91b8" letter-spacing="1">REAKTIONSZEIT</text>
-      <text x="46" y="93" font-family="Rajdhani,sans-serif" font-size="14" font-weight="700" fill="#eef2f9">&lt; 24 Stunden</text>
-
-      <!-- Card 2: top right -->
-      <rect x="380" y="50" width="130" height="46" rx="6" fill="#0d1f3c" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".4"/>
-      <circle cx="400" cy="73" r="10" fill="#2e7fff" opacity=".15" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".5"/>
-      <text x="400" y="77" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" fill="#2e7fff" opacity=".9">🗺️</text>
-      <text x="416" y="69" font-family="Outfit,sans-serif" font-size="9" fill="#7a91b8" letter-spacing="1">EINSATZGEBIET</text>
-      <text x="416" y="83" font-family="Rajdhani,sans-serif" font-size="14" font-weight="700" fill="#eef2f9">Bundesweit</text>
-
-      <!-- Card 3: bottom right -->
-      <rect x="390" y="128" width="122" height="46" rx="6" fill="#0d1f3c" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".4"/>
-      <circle cx="408" cy="151" r="10" fill="#2e7fff" opacity=".15" stroke="#2e7fff" stroke-width=".8" stroke-opacity=".5"/>
-      <text x="408" y="155" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" fill="#2e7fff" opacity=".9">📋</text>
-      <text x="424" y="147" font-family="Outfit,sans-serif" font-size="9" fill="#7a91b8" letter-spacing="1">PROTOKOLL</text>
-      <text x="424" y="161" font-family="Rajdhani,sans-serif" font-size="14" font-weight="700" fill="#eef2f9">Jede Fahrt</text>
-
-      <!-- Animated pulse ring around car -->
-      <circle cx="262" cy="240" r="160" fill="none" stroke="#2e7fff" stroke-width=".5" stroke-opacity=".08" stroke-dasharray="4 8"/>
-      <circle cx="262" cy="240" r="180" fill="none" stroke="#2e7fff" stroke-width=".3" stroke-opacity=".05" stroke-dasharray="2 12"/>
-    </svg>
-  </div>
 
 </section>
 
