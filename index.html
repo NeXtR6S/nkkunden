@@ -216,8 +216,16 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
   .form-row{grid-template-columns:1fr}
 }
 
+
+/* ══ THEME TOGGLE ══ */
+.theme-toggle{width:42px;height:24px;background:rgba(46,127,255,.2);border:1px solid rgba(46,127,255,.3);border-radius:12px;cursor:pointer;position:relative;transition:background .3s,border-color .3s;flex-shrink:0}
+.theme-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--blue);transition:transform .3s,background .3s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.light-mode .theme-toggle{background:rgba(26,95,212,.15);border-color:rgba(26,95,212,.3)}
+body.light-mode .theme-toggle::after{transform:translateX(18px);background:var(--blue2)}
+.toggle-icon{font-size:13px;line-height:1;pointer-events:none}
+
 /* ══ LIGHT MODE ══ */
-@media (prefers-color-scheme: light) {
+body.light-mode {
   :root {
     --navy:    #f0f4ff;
     --navy2:   #e4eaf8;
@@ -334,6 +342,9 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
     <li><a href="#leistungen">Leistungen</a></li>
     <li><a href="#ablauf">Ablauf</a></li>
     <li><a href="#kontakt" class="nav-cta">Jetzt anfragen</a></li>
+    <li>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Design wechseln" aria-label="Dark/Light Mode wechseln"></button>
+    </li>
   </ul>
 </nav>
 
@@ -680,6 +691,23 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
 </footer>
 
 <script>
+
+// Theme toggle
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('nk_theme', isLight ? 'light' : 'dark');
+}
+
+// On load: check saved preference, then system preference
+(function() {
+  const saved = localStorage.getItem('nk_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light-mode');
+  } else if (!saved && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    document.body.classList.add('light-mode');
+  }
+})();
+
 // Reveal on scroll
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
