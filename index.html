@@ -278,6 +278,8 @@ footer{background:var(--navy3);border-top:1px solid var(--border);padding:52px 5
   .versprechen-item{padding:14px 16px;gap:12px}
   .v-icon{width:32px;height:32px;font-size:14px;flex-shrink:0}
 
+  #ueber-uns{padding:60px 16px!important}
+  #ueber-uns > div > div:last-child{grid-template-columns:1fr!important;gap:32px!important}
   .kontakt-section{padding:50px 16px;grid-template-columns:1fr;gap:32px}
   .contact-method{padding:14px 16px;gap:12px}
   .cm-icon{width:36px;height:36px;font-size:16px}
@@ -429,6 +431,7 @@ body.light-mode {
     <li><a href="#warum" onclick="closeMenu()">Warum wir</a></li>
     <li><a href="#leistungen" onclick="closeMenu()">Leistungen</a></li>
     <li><a href="#ablauf" onclick="closeMenu()">Ablauf</a></li>
+    <li><a href="#ueber-uns" onclick="closeMenu()">Über uns</a></li>
     <li><a href="#kontakt" class="nav-cta" onclick="closeMenu()">Jetzt anfragen</a></li>
     <li>
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Design wechseln" aria-label="Dark/Light Mode wechseln"></button>
@@ -449,6 +452,7 @@ body.light-mode {
   <a href="#warum" onclick="closeMenu()" style="display:block;padding:14px 16px;color:var(--white);text-decoration:none;font-size:15px;font-weight:500;border-radius:6px;transition:background .2s" onmouseover="this.style.background='rgba(46,127,255,.1)'" onmouseout="this.style.background='transparent'">Warum wir</a>
   <a href="#leistungen" onclick="closeMenu()" style="display:block;padding:14px 16px;color:var(--white);text-decoration:none;font-size:15px;font-weight:500;border-radius:6px;transition:background .2s" onmouseover="this.style.background='rgba(46,127,255,.1)'" onmouseout="this.style.background='transparent'">Leistungen</a>
   <a href="#ablauf" onclick="closeMenu()" style="display:block;padding:14px 16px;color:var(--white);text-decoration:none;font-size:15px;font-weight:500;border-radius:6px;transition:background .2s" onmouseover="this.style.background='rgba(46,127,255,.1)'" onmouseout="this.style.background='transparent'">Ablauf</a>
+  <a href="#ueber-uns" onclick="closeMenu()" style="display:block;padding:14px 16px;color:var(--white);text-decoration:none;font-size:15px;font-weight:500;border-radius:6px;transition:background .2s" onmouseover="this.style.background='rgba(46,127,255,.1)'" onmouseout="this.style.background='transparent'">Über uns</a>
   <a href="#kontakt" onclick="closeMenu()" style="display:block;margin-top:8px;padding:14px 16px;background:var(--blue);color:#fff;text-decoration:none;font-size:15px;font-weight:600;border-radius:6px;text-align:center">Jetzt anfragen →</a>
 </div>
 
@@ -686,6 +690,66 @@ body.light-mode {
       <div class="versprechen-item">
         <div class="v-icon">🤝</div>
         <div><div class="v-title">Langfristige Partnerschaft</div><div class="v-sub">Kein anonymes Verhältnis — wir möchten Ihr fester Partner sein</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ÜBER UNS -->
+<section id="ueber-uns" style="padding:100px 56px;background:var(--navy-2)">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <div style="margin-bottom:56px">
+      <div class="section-eyebrow">Wer wir sind</div>
+      <h2 class="section-title">Vom Hobby zum <span class="hl">Beruf</span></h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start">
+
+      <!-- Story -->
+      <div>
+        <p style="font-size:16px;line-height:1.85;color:var(--muted);margin-bottom:24px">
+          N &amp; K Fahrzeugüberführung ist eine neu gegründete GbR — geführt von den Inhabern <strong style="color:var(--white)">Noah</strong> und <strong style="color:var(--white)">Kaan</strong>. Was uns antreibt? Eine jahrelange Leidenschaft für Autos, die weit über den normalen Alltag hinausgeht.
+        </p>
+        <p style="font-size:16px;line-height:1.85;color:var(--muted);margin-bottom:24px">
+          Vom Schrauben über den An- und Verkauf von Fahrzeugen bis hin zu ersten Überführungen im kleinen Rahmen — für uns ist das kein Neuland. Unsere Expertise ist in diesem Markt gefragt, und wir bringen sie mit voller Überzeugung ein.
+        </p>
+        <p style="font-size:16px;line-height:1.85;color:var(--muted);margin-bottom:32px">
+          Noah ist gelernter <strong style="color:var(--white)">Fachinformatiker für Systemintegration</strong> und hat anfangs auch in diesem Beruf gearbeitet. Eines Abends saßen Noah &amp; Kaan zusammen und fragten sich: <em style="color:var(--white)">"Hey, lass uns einfach unser Hobby zum Beruf machen."</em> Daraus entstanden die ersten Konzepte — bis wir heute hier stehen, mit unserer eigenen Website und unseren ersten eigenen Kunden.
+        </p>
+        <a href="#kontakt" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--blue-b);color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;transition:all .2s">
+          Kontakt aufnehmen →
+        </a>
+      </div>
+
+      <!-- Founder Cards -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <div style="background:rgba(46,127,255,.06);border:1px solid rgba(46,127,255,.15);border-radius:12px;padding:28px;display:flex;gap:20px;align-items:flex-start">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;flex-shrink:0">N</div>
+          <div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:4px">Noah</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue-b);margin-bottom:10px">Gründer & Geschäftsführer</div>
+            <p style="font-size:13px;color:var(--muted);line-height:1.7">Fachinformatiker für Systemintegration mit tiefer Leidenschaft für Fahrzeuge. Verantwortlich für Digitales, Kalkulation und Kundenbetreuung.</p>
+          </div>
+        </div>
+
+        <div style="background:rgba(46,127,255,.06);border:1px solid rgba(46,127,255,.15);border-radius:12px;padding:28px;display:flex;gap:20px;align-items:flex-start">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;flex-shrink:0">K</div>
+          <div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:4px">Kaan</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Gründer & Geschäftsführer</div>
+            <p style="font-size:13px;color:var(--muted);line-height:1.7">Jahrelange Expertise rund ums Fahrzeug — vom Schrauben bis zur Überführung. Verantwortlich für Logistik und Fahrzeugübernahme vor Ort.</p>
+          </div>
+        </div>
+
+        <!-- Quote -->
+        <div style="background:rgba(46,127,255,.04);border-left:3px solid var(--blue-b);border-radius:0 8px 8px 0;padding:20px 22px;margin-top:4px">
+          <p style="font-size:15px;font-style:italic;color:var(--white);line-height:1.7;margin-bottom:8px">"Hey, lass uns einfach unser Hobby zum Beruf machen."</p>
+          <span style="font-size:11px;color:var(--muted);font-weight:600">— Noah & Kaan, Gründer</span>
+        </div>
+
       </div>
     </div>
   </div>
