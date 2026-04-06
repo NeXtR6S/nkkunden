@@ -6,7 +6,77 @@
 <title>N & K Fahrzeugüberführung — Professionell. Persönlich. Zuverlässig.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+
+function calcPreis() {
+  const km    = parseFloat(document.getElementById('pr-km').value) || 0;
+  const fak   = parseFloat(document.getElementById('pr-typ').value) || 1;
+  const prEl  = document.getElementById('pr-price');
+  const bdEl  = document.getElementById('pr-breakdown');
+  if (km < 10) {
+    prEl.textContent = '—';
+    bdEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3)">Strecke eingeben für Schätzung</div>';
+    return;
+  }
+  const std      = km / 100;
+  const zeitK    = std * 28;
+  const heimK    = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
+  const mautK    = Math.round(km * 0.04);
+  const verpfK   = Math.floor(std / 4) * 15;
+  const gesamtK  = zeitK + heimK + mautK + verpfK;
+  const netto    = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
+  const brutto   = Math.round(netto * 1.19);
+  prEl.textContent = netto.toLocaleString('de-DE') + ' €';
+  bdEl.innerHTML = `
+    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std.)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
+    <div style="display:flex;justify-content:space-between"><span>🚆 Rückfahrt</span><span style="color:#fff">${heimK} €</span></div>
+    <div style="display:flex;justify-content:space-between"><span>🛣 Maut (ca.)</span><span style="color:#fff">${mautK} €</span></div>
+    ${verpfK > 0 ? `<div style="display:flex;justify-content:space-between"><span>🍔 Verpflegung</span><span style="color:#fff">${verpfK} €</span></div>` : ''}
+    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
+    <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4)"><span>Brutto (inkl. 19% MwSt.)</span><span>${brutto.toLocaleString('de-DE')} €</span></div>
+  `;
+}
+
+function toggleFaq(btn) {
+  const ans  = btn.nextElementSibling;
+  const icon = btn.querySelector('.faq-icon');
+  const open = ans.classList.toggle('open');
+  icon.style.transform = open ? 'rotate(45deg)' : 'rotate(0)';
+}
+
+
+// Cookie Banner
+(function() {
+  if (!localStorage.getItem('nk_cookie_ok')) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
+})();
+function acceptCookies() {
+  localStorage.setItem('nk_cookie_ok', '1');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+
+
+// Show legal pages
+function showLegal(id) {
+  ['impressum','datenschutz'].forEach(s => {
+    document.getElementById(s).style.display = 'none';
+  });
+  if (id) {
+    document.getElementById(id).style.display = 'block';
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  }
+}
+// Handle hash on load
+window.addEventListener('hashchange', () => {
+  if (location.hash === '#impressum') showLegal('impressum');
+  else if (location.hash === '#datenschutz') showLegal('datenschutz');
+  else showLegal(null);
+});
+if (location.hash === '#impressum') showLegal('impressum');
+if (location.hash === '#datenschutz') showLegal('datenschutz');
+
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -277,6 +347,8 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
 
 /* ══ MOBILE ══ */
 @media(max-width:600px){
+  #referenzen > div > div:last-child{grid-template-columns:1fr!important}
+
   nav{padding:0 16px;height:60px}
   .nav-links{display:none}
   .hamburger{display:flex}
@@ -292,6 +364,7 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
   .promise-item{font-size:11px}
 
   section{padding:56px 20px}
+  #preisrechner .section-inner > div:last-child{grid-template-columns:1fr!important}
   .section-title{font-size:clamp(26px,8vw,38px)}
 
   .strip{grid-template-columns:1fr 1fr}
@@ -312,6 +385,14 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
   .hero-title{font-size:36px}
   .strip{grid-template-columns:1fr}
 }
+
+.faq-item{border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.faq-item:has(.faq-a.open){border-color:rgba(46,127,255,.3)}
+.faq-q{width:100%;padding:18px 20px;background:var(--navy2);border:none;color:#fff;font-size:15px;font-weight:500;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:'Outfit',sans-serif;transition:background .2s}
+.faq-q:hover{background:rgba(46,127,255,.08)}
+.faq-icon{font-size:22px;color:var(--blue);flex-shrink:0;transition:transform .3s;line-height:1}
+.faq-a{max-height:0;overflow:hidden;padding:0 20px;font-size:14px;color:var(--muted);line-height:1.75;transition:max-height .35s ease,padding .35s ease;background:var(--navy2)}
+.faq-a.open{max-height:200px;padding:16px 20px}
 </style>
 </head>
 <body>
@@ -334,6 +415,7 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
     <li><a href="#warum">Warum wir</a></li>
     <li><a href="#leistungen">Leistungen</a></li>
     <li><a href="#ablauf">Ablauf</a></li>
+    <li><a href="#preisrechner">Preisrechner</a></li>
     <li><a href="#ueber-uns">Über uns</a></li>
     <li><a href="#kontakt" class="nav-cta">Jetzt anfragen</a></li>
   </ul>
@@ -349,6 +431,7 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
   <a href="#warum" onclick="closeMenu()">Warum wir</a>
   <a href="#leistungen" onclick="closeMenu()">Leistungen</a>
   <a href="#ablauf" onclick="closeMenu()">Ablauf</a>
+  <a href="#preisrechner" onclick="closeMenu()">Preisrechner</a>
   <a href="#ueber-uns" onclick="closeMenu()">Über uns</a>
   <a href="#kontakt" class="mob-cta" onclick="closeMenu()">Jetzt anfragen →</a>
 </div>
@@ -610,6 +693,194 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
   </div>
 </section>
 
+
+
+<!-- PREISRECHNER -->
+<section id="preisrechner" style="background:var(--navy2)">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Sofort-Schätzung</div>
+      <h2 class="section-title">Preisrechner</h2>
+      <p style="color:var(--muted);font-size:15px;margin-top:-32px;margin-bottom:40px">Unverbindliche Schätzung — das genaue Angebot erhalten Sie per Mail.</p>
+    </div>
+    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Von (Abholort)</label>
+          <input id="pr-von" class="form-input" type="text" placeholder="z.B. München" oninput="calcPreis()">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Nach (Zielort)</label>
+          <input id="pr-nach" class="form-input" type="text" placeholder="z.B. Hamburg" oninput="calcPreis()">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Ungefähre Strecke (km)</label>
+          <input id="pr-km" class="form-input" type="number" placeholder="z.B. 780" min="0" oninput="calcPreis()">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Fahrzeugtyp</label>
+          <select id="pr-typ" class="form-input" onchange="calcPreis()">
+            <option value="1">PKW / Kombi</option>
+            <option value="1.1">SUV / Geländewagen</option>
+            <option value="1.15">Transporter / Van</option>
+            <option value="1.2">Elektrofahrzeug</option>
+            <option value="1.25">Luxus / Sportwagen</option>
+            <option value="1.3">Tiefergelegt</option>
+          </select>
+        </div>
+        <a href="#kontakt" class="btn-primary" style="text-align:center;margin-top:4px">Verbindliches Angebot anfragen →</a>
+      </div>
+      <div id="pr-result" style="background:#060F1E;border:1px solid var(--border);border-radius:12px;padding:32px;text-align:center">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px">Geschätzter Preis</div>
+        <div id="pr-price" style="font-family:'Rajdhani',sans-serif;font-size:56px;font-weight:700;color:var(--blue);line-height:1">—</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:8px">netto, zzgl. MwSt.</div>
+        <div style="border-top:1px solid var(--border);margin:24px 0"></div>
+        <div id="pr-breakdown" style="text-align:left;font-size:13px;color:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:8px">
+          <div style="text-align:center;color:rgba(255,255,255,.3)">Strecke eingeben für Schätzung</div>
+        </div>
+        <div style="margin-top:20px;font-size:11px;color:rgba(255,255,255,.25);line-height:1.6">Diese Schätzung dient nur zur Orientierung.<br>Das verbindliche Angebot erhalten Sie per Mail.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENZEN -->
+<section id="referenzen" style="background:var(--navy2)">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Bereits gefahren</div>
+      <h2 class="section-title">Referenz<span class="hl">routen</span></h2>
+    </div>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW · ~780 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">München → Hamburg</div>
+        <div style="font-size:12px;color:var(--muted)">BMW 3er · Einzelüberführung</div>
+      </div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">SUV · ~1.840 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Hamburg → Barcelona</div>
+        <div style="font-size:12px;color:var(--muted)">Audi Q5 · Auslandsüberführung</div>
+      </div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Elektro · ~580 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Stuttgart → Berlin</div>
+        <div style="font-size:12px;color:var(--muted)">Tesla Model 3 · Einzelüberführung</div>
+      </div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Luxus · ~450 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Frankfurt → Wien</div>
+        <div style="font-size:12px;color:var(--muted)">Porsche 911 · Einzelüberführung</div>
+      </div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Transporter · ~320 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Düsseldorf → Leipzig</div>
+        <div style="font-size:12px;color:var(--muted)">VW Crafter · Händlerauftrag</div>
+      </div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW · ~1.200 km</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Berlin → Madrid</div>
+        <div style="font-size:12px;color:var(--muted)">Mercedes C-Klasse · Ausland</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENZEN -->
+<section id="referenzen" style="background:var(--navy2)">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Bereits gefahren</div>
+      <h2 class="section-title">Referenz<span class="hl">routen</span></h2>
+    </div>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW · ~780 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">München → Hamburg</div><div style="font-size:12px;color:var(--muted)">BMW 3er · Einzelüberführung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">SUV · ~1.840 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Hamburg → Barcelona</div><div style="font-size:12px;color:var(--muted)">Audi Q5 · Auslandsüberführung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Elektro · ~580 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Stuttgart → Berlin</div><div style="font-size:12px;color:var(--muted)">Tesla Model 3 · Einzelüberführung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Luxus · ~450 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Frankfurt → Wien</div><div style="font-size:12px;color:var(--muted)">Porsche 911 · Einzelüberführung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Transporter · ~320 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Düsseldorf → Leipzig</div><div style="font-size:12px;color:var(--muted)">VW Crafter · Händlerauftrag</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW · ~1.200 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Berlin → Madrid</div><div style="font-size:12px;color:var(--muted)">Mercedes C-Klasse · Ausland</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENZEN -->
+<section id="referenzen" style="background:var(--navy2)">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Bereits gefahren</div>
+      <h2 class="section-title">Referenz<span class="hl">routen</span></h2>
+    </div>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW ~ 780 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Muenchen Hamburg</div><div style="font-size:12px;color:var(--muted)">BMW 3er Einzelueberfuehrung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">SUV ~ 1840 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Hamburg Barcelona</div><div style="font-size:12px;color:var(--muted)">Audi Q5 Auslandsueberfuehrung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Elektro ~ 580 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Stuttgart Berlin</div><div style="font-size:12px;color:var(--muted)">Tesla Model 3 Einzelueberfuehrung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Luxus ~ 450 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Frankfurt Wien</div><div style="font-size:12px;color:var(--muted)">Porsche 911 Einzelueberfuehrung</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">Transporter ~ 320 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Duesseldorf Leipzig</div><div style="font-size:12px;color:var(--muted)">VW Crafter Haendlerauftrag</div></div>
+      <div style="background:#060F1E;border:1px solid var(--border);border-radius:10px;padding:20px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:10px">PKW ~ 1200 km</div><div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px">Berlin Madrid</div><div style="font-size:12px;color:var(--muted)">Mercedes C-Klasse Ausland</div></div>
+    </div>
+  </div>
+</section>
+<!-- FAQ -->
+<section id="faq" style="background:#060F1E">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Häufige Fragen</div>
+      <h2 class="section-title">FAQ</h2>
+    </div>
+    <div class="reveal" style="display:flex;flex-direction:column;gap:12px;max-width:800px">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Was kostet eine Fahrzeugüberführung?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Der Preis hängt von der Strecke, dem Fahrzeugtyp und dem Aufwand ab. Für eine kostenlose und unverbindliche Einschätzung einfach anfragen — wir melden uns innerhalb von 24 Stunden mit einem Festpreisangebot.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Wie weit im Voraus muss ich buchen?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Wir sind kurzfristig verfügbar — in vielen Fällen auch mit 24-48 Stunden Vorlauf. Für planbare Aufträge empfehlen wir 3-5 Werktage im Voraus zu buchen.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Was passiert wenn das Fahrzeug Vorschäden hat?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Vor jeder Überführung erstellen wir ein detailliertes Übergabeprotokoll mit Fotos. Vorschäden werden dokumentiert, sodass klar ist was vor und was nach der Überführung entstanden ist.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Führt ihr auch Auslandsüberführungen durch?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Ja, wir überführen Fahrzeuge innerhalb ganz Europas. Bitte geben Sie bei der Anfrage das Zielland an, damit wir eventuelle Besonderheiten wie Maut, Vignetten oder zusätzliche Dokumente einplanen können.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Wie kommt der Fahrer nach der Übergabe zurück?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Die Rückfahrt organisieren wir selbst — per Bahn, Bus oder Flug. Diese Kosten sind im Angebot bereits einkalkuliert, es entstehen für Sie keine zusätzlichen Aufwände.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Ist das Fahrzeug während der Überführung versichert?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Ja. Das Fahrzeug ist während der gesamten Überführung vollständig versichert. Für Details zur Versicherungsabdeckung sprechen Sie uns gerne direkt an.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Welche Fahrzeuge überführt ihr?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">PKW, Kombis, SUVs, Transporter, Elektrofahrzeuge und Luxusfahrzeuge. Bei tiefergelegten Fahrzeugen oder Exoten bitte vorab anfragen — in der Regel ist auch das kein Problem.</div>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- KONTAKT -->
 <section id="kontakt">
   <div class="section-inner">
@@ -675,6 +946,7 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
         <li><a href="#warum">Warum wir</a></li>
         <li><a href="#leistungen">Leistungen</a></li>
         <li><a href="#ablauf">Ablauf</a></li>
+    <li><a href="#preisrechner">Preisrechner</a></li>
         <li><a href="#ueber-uns">Über uns</a></li>
         <li><a href="#kontakt">Kontakt</a></li>
       </ul>
@@ -683,13 +955,18 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
       <div class="footer-col-title">Kontakt</div>
       <ul class="footer-links">
         <li><a href="mailto:n.knappitsch@gmail.com">n.knappitsch@gmail.com</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="#kontakt">Anfrage stellen</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
     <div class="footer-copy">© 2025 N & K Fahrzeugüberführung GbR. Alle Rechte vorbehalten.</div>
-    <div class="footer-badge">Professionell · Persönlich · Zuverlässig</div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <a href="#impressum" onclick="showLegal('impressum')" style="font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Impressum</a>
+      <a href="#datenschutz" onclick="showLegal('datenschutz')" style="font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Datenschutz</a>
+      <div class="footer-badge">Professionell · Persönlich · Zuverlässig</div>
+    </div>
   </div>
 </footer>
 
@@ -739,15 +1016,17 @@ async function submitForm() {
   btn.disabled=true; btn.textContent='Wird gesendet...';
 
   const { error } = await sb.from('anfragen').insert({
-    vorname, nachname, email, von, nach, art, nachricht,
-    status: 'neu', created_at: new Date().toISOString()
+    vorname, nachname, email, art, nachricht,
+    von, nach,
+    status: 'neu'
   });
 
   btn.disabled=false; btn.textContent='Anfrage absenden →';
 
   if (error) {
+    console.error('Supabase error:', error);
     msg.style.display='block'; msg.style.color='#f87171';
-    msg.textContent='Fehler beim Senden. Bitte per E-Mail kontaktieren.';
+    msg.textContent='Fehler: ' + (error.message || 'Bitte direkt per E-Mail kontaktieren.');
   } else {
     msg.style.display='block'; msg.style.color='#4ade80';
     msg.textContent='✅ Anfrage gesendet! Wir melden uns innerhalb von 24 Stunden.';
@@ -755,6 +1034,155 @@ async function submitForm() {
     document.getElementById('f-art').value='';
   }
 }
+
+
+function calcPreis() {
+  const km    = parseFloat(document.getElementById('pr-km').value) || 0;
+  const fak   = parseFloat(document.getElementById('pr-typ').value) || 1;
+  const prEl  = document.getElementById('pr-price');
+  const bdEl  = document.getElementById('pr-breakdown');
+  if (km < 10) {
+    prEl.textContent = '—';
+    bdEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3)">Strecke eingeben für Schätzung</div>';
+    return;
+  }
+  const std      = km / 100;
+  const zeitK    = std * 28;
+  const heimK    = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
+  const mautK    = Math.round(km * 0.04);
+  const verpfK   = Math.floor(std / 4) * 15;
+  const gesamtK  = zeitK + heimK + mautK + verpfK;
+  const netto    = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
+  const brutto   = Math.round(netto * 1.19);
+  prEl.textContent = netto.toLocaleString('de-DE') + ' €';
+  bdEl.innerHTML = `
+    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std.)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
+    <div style="display:flex;justify-content:space-between"><span>🚆 Rückfahrt</span><span style="color:#fff">${heimK} €</span></div>
+    <div style="display:flex;justify-content:space-between"><span>🛣 Maut (ca.)</span><span style="color:#fff">${mautK} €</span></div>
+    ${verpfK > 0 ? `<div style="display:flex;justify-content:space-between"><span>🍔 Verpflegung</span><span style="color:#fff">${verpfK} €</span></div>` : ''}
+    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
+    <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4)"><span>Brutto (inkl. 19% MwSt.)</span><span>${brutto.toLocaleString('de-DE')} €</span></div>
+  `;
+}
+
+function toggleFaq(btn) {
+  const ans  = btn.nextElementSibling;
+  const icon = btn.querySelector('.faq-icon');
+  const open = ans.classList.toggle('open');
+  icon.style.transform = open ? 'rotate(45deg)' : 'rotate(0)';
+}
+
+
+// Cookie Banner
+(function() {
+  if (!localStorage.getItem('nk_cookie_ok')) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
+})();
+function acceptCookies() {
+  localStorage.setItem('nk_cookie_ok', '1');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+
+
+// Show legal pages
+function showLegal(id) {
+  ['impressum','datenschutz'].forEach(s => {
+    document.getElementById(s).style.display = 'none';
+  });
+  if (id) {
+    document.getElementById(id).style.display = 'block';
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  }
+}
+// Handle hash on load
+window.addEventListener('hashchange', () => {
+  if (location.hash === '#impressum') showLegal('impressum');
+  else if (location.hash === '#datenschutz') showLegal('datenschutz');
+  else showLegal(null);
+});
+if (location.hash === '#impressum') showLegal('impressum');
+if (location.hash === '#datenschutz') showLegal('datenschutz');
+
 </script>
+
+
+<!-- IMPRESSUM -->
+<section id="impressum" style="display:none;background:#060F1E;min-height:80vh">
+  <div class="section-inner" style="max-width:800px">
+    <h2 class="section-title">Impressum</h2>
+    <div style="color:var(--muted);font-size:14px;line-height:1.9;display:flex;flex-direction:column;gap:20px">
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">Angaben gemäß § 5 TMG</strong>
+        N & K Fahrzeugüberführung GbR<br>
+        Noah Knappitsch<br>
+        Bad Urach, Deutschland
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">Kontakt</strong>
+        E-Mail: n.knappitsch@gmail.com
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)</strong>
+        Noah Knappitsch
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">Haftungsausschluss</strong>
+        Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATENSCHUTZ -->
+<section id="datenschutz" style="display:none;background:#060F1E;min-height:80vh">
+  <div class="section-inner" style="max-width:800px">
+    <h2 class="section-title">Datenschutzerklärung</h2>
+    <div style="color:var(--muted);font-size:14px;line-height:1.9;display:flex;flex-direction:column;gap:20px">
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">1. Datenschutz auf einen Blick</strong>
+        Die Nutzung unserer Website ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten erhoben werden, erfolgt dies stets auf freiwilliger Basis.
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">2. Kontaktformular</strong>
+        Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Formular zur Bearbeitung der Anfrage gespeichert. Diese Daten werden nicht ohne Ihre Einwilligung weitergegeben. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">3. Cookies</strong>
+        Wir verwenden ausschließlich technisch notwendige Cookies (z.B. zur Speicherung Ihrer Cookie-Einwilligung). Es werden keine Tracking- oder Marketing-Cookies eingesetzt.
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">4. Ihre Rechte</strong>
+        Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten. Kontakt: n.knappitsch@gmail.com
+      </div>
+      <div>
+        <strong style="color:#fff;display:block;margin-bottom:6px">5. Hosting</strong>
+        Diese Website wird über GitHub Pages gehostet. Anbieter: GitHub Inc., 88 Colin P Kelly Jr St, San Francisco, CA 94107, USA. Weitere Informationen: <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" style="color:var(--blue)">GitHub Privacy Statement</a>.
+      </div>
+    </div>
+  </div>
+</section>
+<!-- WHATSAPP FLOATING BUTTON -->
+<a href="https://wa.me/49" id="wa-btn" target="_blank" rel="noopener"
+  style="position:fixed;bottom:28px;right:28px;z-index:999;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:transform .2s,box-shadow .2s;text-decoration:none"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(37,211,102,.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(37,211,102,.4)'"
+  title="Auf WhatsApp schreiben">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.526 5.845L.057 23.882l6.186-1.443A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.516-5.187-1.415l-.371-.22-3.851.899.952-3.768-.242-.389A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+  </svg>
+</a>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#0D1F3C;border-top:1px solid rgba(46,127,255,.2);padding:18px 32px;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+  <p style="font-size:13px;color:rgba(255,255,255,.7);margin:0;max-width:700px;line-height:1.6">
+    Wir verwenden nur technisch notwendige Cookies. Es werden keine Tracking- oder Analyse-Cookies eingesetzt.
+    <a href="#datenschutz" style="color:var(--blue);text-decoration:none"> Mehr erfahren</a>
+  </p>
+  <div style="display:flex;gap:10px;flex-shrink:0">
+    <button onclick="acceptCookies()" style="padding:10px 22px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif">Verstanden</button>
+  </div>
+</div>
 </body>
 </html>
