@@ -8,31 +8,100 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 
+// Preisrechner Adress-Autocomplete
+let prTimers = {};
+let prCoords = { von: null, nach: null };
+let prCC     = { von: 'DE', nach: 'DE' };
+
+async function prAddrSearch(inputId, ddId) {
+  const val = document.getElementById(inputId).value.trim();
+  const dd  = document.getElementById(ddId);
+  if (val.length < 2) { dd.classList.remove('open'); return; }
+  clearTimeout(prTimers[inputId]);
+  prTimers[inputId] = setTimeout(async () => {
+    dd.innerHTML = '<div class="pr-dd-loading">Suche...</div>';
+    dd.classList.add('open');
+    try {
+      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&addressdetails=1&limit=5&accept-language=de`, { headers:{'User-Agent':'NK-App/1.0'} });
+      const data = await res.json();
+      if (!data.length) { dd.innerHTML = '<div class="pr-dd-loading">Keine Ergebnisse</div>'; return; }
+      dd.innerHTML = data.map(p => {
+        const addr = p.address;
+        const main = addr.city||addr.town||addr.village||addr.municipality||p.display_name.split(',')[0];
+        const cc   = (addr.country_code||'DE').toUpperCase();
+        const flag = cc ? String.fromCodePoint(...[...cc].map(c=>0x1F1E6+c.charCodeAt(0)-65)) : '';
+        const sub  = [addr.state, addr.country].filter(Boolean).join(', ');
+        return `<div class="pr-dd-item" onclick="prAddrSelect('${inputId}','${ddId}',${p.lat},${p.lon},'${main.replace(/'/g,"\'")}','${cc}')">
+          <span class="pr-dd-item-main">${flag} ${main}</span>
+          <span class="pr-dd-item-sub">${sub}</span>
+        </div>`;
+      }).join('');
+    } catch(e) { dd.innerHTML = '<div class="pr-dd-loading">Fehler</div>'; }
+  }, 400);
+}
+
+function prAddrSelect(inputId, ddId, lat, lon, name, cc) {
+  document.getElementById(inputId).value = name;
+  document.getElementById(ddId).classList.remove('open');
+  const field = inputId === 'pr-von' ? 'von' : 'nach';
+  prCoords[field] = { lat: parseFloat(lat), lon: parseFloat(lon) };
+  prCC[field] = cc;
+  // Show country hint
+  const ccEl = document.getElementById('pr-' + field + '-cc');
+  if (ccEl && cc !== 'DE') ccEl.textContent = '🌍 Ausland erkannt — erhöhter Stundensatz';
+  else if (ccEl) ccEl.textContent = '';
+  // Auto-calculate distance if both set
+  if (prCoords.von && prCoords.nach) {
+    const km = Math.round(haversineKmPr(prCoords.von.lat, prCoords.von.lon, prCoords.nach.lat, prCoords.nach.lon) * 1.28);
+    document.getElementById('pr-km').value = km;
+  }
+  calcPreis();
+}
+
+function haversineKmPr(lat1,lon1,lat2,lon2) {
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pr-von')?.parentElement && !e.target.closest('#pr-dd-von')) document.getElementById('pr-dd-von')?.classList.remove('open');
+  if (!e.target.closest('#pr-nach')?.parentElement && !e.target.closest('#pr-dd-nach')) document.getElementById('pr-dd-nach')?.classList.remove('open');
+});
+
 function calcPreis() {
-  const km    = parseFloat(document.getElementById('pr-km').value) || 0;
-  const fak   = parseFloat(document.getElementById('pr-typ').value) || 1;
-  const prEl  = document.getElementById('pr-price');
-  const bdEl  = document.getElementById('pr-breakdown');
+  const km   = parseFloat(document.getElementById('pr-km').value) || 0;
+  const fak  = parseFloat(document.getElementById('pr-typ').value) || 1;
+  const prEl = document.getElementById('pr-price');
+  const bdEl = document.getElementById('pr-breakdown');
+
   if (km < 10) {
     prEl.textContent = '—';
     bdEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3)">Strecke eingeben für Schätzung</div>';
     return;
   }
-  const std      = km / 100;
-  const zeitK    = std * 28;
-  const heimK    = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
-  const mautK    = Math.round(km * 0.04);
-  const verpfK   = Math.floor(std / 4) * 15;
-  const gesamtK  = zeitK + heimK + mautK + verpfK;
-  const netto    = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
-  const brutto   = Math.round(netto * 1.19);
+
+  // Ausland-Erkennung: 35€/Std statt 28€
+  const isAbroad = prCC.von !== 'DE' || prCC.nach !== 'DE';
+  const stdsatz  = isAbroad ? 35 : 28;
+
+  const std    = km / 100;
+  const zeitK  = std * stdsatz;
+  const heimK  = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
+  const mautK  = Math.round(km * (isAbroad ? 0.07 : 0.04));
+  const verpfK = Math.floor(std / 4) * 15;
+  const gesamtK= zeitK + heimK + mautK + verpfK;
+  const netto  = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
+  const brutto = Math.round(netto * 1.19);
+
   prEl.textContent = netto.toLocaleString('de-DE') + ' €';
   bdEl.innerHTML = `
-    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std.)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
+    ${isAbroad ? '<div style="background:rgba(200,155,42,.1);border:1px solid rgba(200,155,42,.3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#C89B2A">🌍 Auslandsfahrt — erhöhter Stundensatz (35 €/Std.)</div>' : ''}
+    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std. × ${stdsatz}€)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
     <div style="display:flex;justify-content:space-between"><span>🚆 Rückfahrt</span><span style="color:#fff">${heimK} €</span></div>
     <div style="display:flex;justify-content:space-between"><span>🛣 Maut (ca.)</span><span style="color:#fff">${mautK} €</span></div>
     ${verpfK > 0 ? `<div style="display:flex;justify-content:space-between"><span>🍔 Verpflegung</span><span style="color:#fff">${verpfK} €</span></div>` : ''}
-    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
+    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
     <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4)"><span>Brutto (inkl. 19% MwSt.)</span><span>${brutto.toLocaleString('de-DE')} €</span></div>
   `;
 }
@@ -393,6 +462,15 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
 .faq-icon{font-size:22px;color:var(--blue);flex-shrink:0;transition:transform .3s;line-height:1}
 .faq-a{max-height:0;overflow:hidden;padding:0 20px;font-size:14px;color:var(--muted);line-height:1.75;transition:max-height .35s ease,padding .35s ease;background:var(--navy2)}
 .faq-a.open{max-height:200px;padding:16px 20px}
+
+.pr-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0D1F3C;border:1.5px solid #2E7FFF;border-radius:8px;box-shadow:0 16px 40px rgba(0,0,0,.4);z-index:9999;max-height:200px;overflow-y:auto;display:none}
+.pr-dropdown.open{display:block}
+.pr-dd-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);color:#fff;display:flex;flex-direction:column;gap:2px;transition:background .15s}
+.pr-dd-item:last-child{border-bottom:none}
+.pr-dd-item:hover{background:rgba(46,127,255,.15)}
+.pr-dd-item-main{font-weight:600;font-size:13px}
+.pr-dd-item-sub{color:rgba(255,255,255,.4);font-size:11px}
+.pr-dd-loading{padding:12px 14px;font-size:12px;color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
@@ -705,13 +783,21 @@ footer{background:var(--navy2);border-top:1px solid var(--border);padding:48px 4
     </div>
     <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start">
       <div style="display:flex;flex-direction:column;gap:16px">
-        <div>
+        <div style="position:relative">
           <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Von (Abholort)</label>
-          <input id="pr-von" class="form-input" type="text" placeholder="z.B. München" oninput="calcPreis()">
+          <div style="position:relative;z-index:102">
+            <input id="pr-von" class="form-input" type="text" placeholder="Stadt oder Adresse..." autocomplete="off" oninput="prAddrSearch('pr-von','pr-dd-von')">
+            <div id="pr-dd-von" class="pr-dropdown"></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px" id="pr-von-cc"></div>
         </div>
-        <div>
+        <div style="position:relative">
           <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Nach (Zielort)</label>
-          <input id="pr-nach" class="form-input" type="text" placeholder="z.B. Hamburg" oninput="calcPreis()">
+          <div style="position:relative;z-index:101">
+            <input id="pr-nach" class="form-input" type="text" placeholder="Stadt oder Adresse..." autocomplete="off" oninput="prAddrSearch('pr-nach','pr-dd-nach')">
+            <div id="pr-dd-nach" class="pr-dropdown"></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px" id="pr-nach-cc"></div>
         </div>
         <div>
           <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);display:block;margin-bottom:8px">Ungefähre Strecke (km)</label>
@@ -1002,31 +1088,100 @@ async function submitForm() {
 }
 
 
+// Preisrechner Adress-Autocomplete
+let prTimers = {};
+let prCoords = { von: null, nach: null };
+let prCC     = { von: 'DE', nach: 'DE' };
+
+async function prAddrSearch(inputId, ddId) {
+  const val = document.getElementById(inputId).value.trim();
+  const dd  = document.getElementById(ddId);
+  if (val.length < 2) { dd.classList.remove('open'); return; }
+  clearTimeout(prTimers[inputId]);
+  prTimers[inputId] = setTimeout(async () => {
+    dd.innerHTML = '<div class="pr-dd-loading">Suche...</div>';
+    dd.classList.add('open');
+    try {
+      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&addressdetails=1&limit=5&accept-language=de`, { headers:{'User-Agent':'NK-App/1.0'} });
+      const data = await res.json();
+      if (!data.length) { dd.innerHTML = '<div class="pr-dd-loading">Keine Ergebnisse</div>'; return; }
+      dd.innerHTML = data.map(p => {
+        const addr = p.address;
+        const main = addr.city||addr.town||addr.village||addr.municipality||p.display_name.split(',')[0];
+        const cc   = (addr.country_code||'DE').toUpperCase();
+        const flag = cc ? String.fromCodePoint(...[...cc].map(c=>0x1F1E6+c.charCodeAt(0)-65)) : '';
+        const sub  = [addr.state, addr.country].filter(Boolean).join(', ');
+        return `<div class="pr-dd-item" onclick="prAddrSelect('${inputId}','${ddId}',${p.lat},${p.lon},'${main.replace(/'/g,"\'")}','${cc}')">
+          <span class="pr-dd-item-main">${flag} ${main}</span>
+          <span class="pr-dd-item-sub">${sub}</span>
+        </div>`;
+      }).join('');
+    } catch(e) { dd.innerHTML = '<div class="pr-dd-loading">Fehler</div>'; }
+  }, 400);
+}
+
+function prAddrSelect(inputId, ddId, lat, lon, name, cc) {
+  document.getElementById(inputId).value = name;
+  document.getElementById(ddId).classList.remove('open');
+  const field = inputId === 'pr-von' ? 'von' : 'nach';
+  prCoords[field] = { lat: parseFloat(lat), lon: parseFloat(lon) };
+  prCC[field] = cc;
+  // Show country hint
+  const ccEl = document.getElementById('pr-' + field + '-cc');
+  if (ccEl && cc !== 'DE') ccEl.textContent = '🌍 Ausland erkannt — erhöhter Stundensatz';
+  else if (ccEl) ccEl.textContent = '';
+  // Auto-calculate distance if both set
+  if (prCoords.von && prCoords.nach) {
+    const km = Math.round(haversineKmPr(prCoords.von.lat, prCoords.von.lon, prCoords.nach.lat, prCoords.nach.lon) * 1.28);
+    document.getElementById('pr-km').value = km;
+  }
+  calcPreis();
+}
+
+function haversineKmPr(lat1,lon1,lat2,lon2) {
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pr-von')?.parentElement && !e.target.closest('#pr-dd-von')) document.getElementById('pr-dd-von')?.classList.remove('open');
+  if (!e.target.closest('#pr-nach')?.parentElement && !e.target.closest('#pr-dd-nach')) document.getElementById('pr-dd-nach')?.classList.remove('open');
+});
+
 function calcPreis() {
-  const km    = parseFloat(document.getElementById('pr-km').value) || 0;
-  const fak   = parseFloat(document.getElementById('pr-typ').value) || 1;
-  const prEl  = document.getElementById('pr-price');
-  const bdEl  = document.getElementById('pr-breakdown');
+  const km   = parseFloat(document.getElementById('pr-km').value) || 0;
+  const fak  = parseFloat(document.getElementById('pr-typ').value) || 1;
+  const prEl = document.getElementById('pr-price');
+  const bdEl = document.getElementById('pr-breakdown');
+
   if (km < 10) {
     prEl.textContent = '—';
     bdEl.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.3)">Strecke eingeben für Schätzung</div>';
     return;
   }
-  const std      = km / 100;
-  const zeitK    = std * 28;
-  const heimK    = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
-  const mautK    = Math.round(km * 0.04);
-  const verpfK   = Math.floor(std / 4) * 15;
-  const gesamtK  = zeitK + heimK + mautK + verpfK;
-  const netto    = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
-  const brutto   = Math.round(netto * 1.19);
+
+  // Ausland-Erkennung: 35€/Std statt 28€
+  const isAbroad = prCC.von !== 'DE' || prCC.nach !== 'DE';
+  const stdsatz  = isAbroad ? 35 : 28;
+
+  const std    = km / 100;
+  const zeitK  = std * stdsatz;
+  const heimK  = km > 800 ? 220 : km > 400 ? 120 : km > 150 ? 70 : 35;
+  const mautK  = Math.round(km * (isAbroad ? 0.07 : 0.04));
+  const verpfK = Math.floor(std / 4) * 15;
+  const gesamtK= zeitK + heimK + mautK + verpfK;
+  const netto  = Math.ceil((gesamtK * 1.2 * fak) / 5) * 5;
+  const brutto = Math.round(netto * 1.19);
+
   prEl.textContent = netto.toLocaleString('de-DE') + ' €';
   bdEl.innerHTML = `
-    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std.)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
+    ${isAbroad ? '<div style="background:rgba(200,155,42,.1);border:1px solid rgba(200,155,42,.3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#C89B2A">🌍 Auslandsfahrt — erhöhter Stundensatz (35 €/Std.)</div>' : ''}
+    <div style="display:flex;justify-content:space-between"><span>⏱ Zeitaufwand (${std.toFixed(1).replace('.',',')} Std. × ${stdsatz}€)</span><span style="color:#fff">${zeitK.toFixed(0)} €</span></div>
     <div style="display:flex;justify-content:space-between"><span>🚆 Rückfahrt</span><span style="color:#fff">${heimK} €</span></div>
     <div style="display:flex;justify-content:space-between"><span>🛣 Maut (ca.)</span><span style="color:#fff">${mautK} €</span></div>
     ${verpfK > 0 ? `<div style="display:flex;justify-content:space-between"><span>🍔 Verpflegung</span><span style="color:#fff">${verpfK} €</span></div>` : ''}
-    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
+    <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;font-weight:600;color:#fff"><span>Netto</span><span>${netto.toLocaleString('de-DE')} €</span></div>
     <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4)"><span>Brutto (inkl. 19% MwSt.)</span><span>${brutto.toLocaleString('de-DE')} €</span></div>
   `;
 }
